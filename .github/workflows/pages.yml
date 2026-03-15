@@ -19,7 +19,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
-      - name: Upload artifact
+      - name: Setup GitHub Pages
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            try {
+              console.log('Configuring GitHub Pages...');
+              await github.rest.repos.update({
+                owner,
+                repo,
+                pages: {
+                  build_type: 'workflow',
+                  source: {
+                    branch: 'main',
+                    path: '/'
+                  }
+                }
+              });
+              console.log('GitHub Pages configured');
+            } catch (error) {
+              if (error.status === 422) {
+                console.log('GitHub Pages already configured');
+              } else {
+                console.error('Error:', error.message);
+              }
+            }
+      
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
